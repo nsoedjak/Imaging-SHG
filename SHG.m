@@ -1,10 +1,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SHG: Second harmonic generation image reconstruction with least-square 
-%       minimization method based on the Helmholtz model
+%       minimization method
 %
-% Author:      Kui Ren  ren@math.utexas.edu 
-% Institution: Department of Mathematics, UT Austin
-% Last update: 2010-10-07
+% Authors: Kui Ren  (kr2002@columbia.edu), Nathan Soedjak (ns3572@columbia.edu)
+% Institution: Department of Applied Physics and Applied Mathematics, Columbia University
+% Last update: 2023-2-18
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
