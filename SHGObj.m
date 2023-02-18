@@ -2,7 +2,7 @@
 % This function evaluate the objective function and its gradients with 
 % respect to the optimization variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [f g]=SHGObj(X,MinVar,gamma,x,y,dx,dy,Nx,Ny,P,E,T,...
+function [f g]=SHGObj(X,MinVar,x,y,dx,dy,Nx,Ny,P,E,T,...
     Ns,Hm,SrcInfo,BdaryInfo,wnum)
 
 M=Nx*Ny; % total number of nodes in the mesh
@@ -10,9 +10,10 @@ ne = size(SrcInfo,2); % number of edges/nodes on the domain boundary
 
 refc=X(1:M);% current value of n
 sigmac=X(M+1:2*M); % current value of sigma
+gammac=X(2*M+1:3*M); %current value of gamma
 
 f=0.0;
-g=zeros(2*M,1);
+g=zeros(3*M,1);
 for ks=1:Ns
     
     Hc=zeros(M,1); % predicted data
@@ -21,7 +22,7 @@ for ks=1:Ns
  
     uc=HelmholtzSolve('u_Forward',SrcInfo,BdaryInfo,ks,P,E,T,wnum,refc,sigmac,srczero);
 
-    srcv = -(2*wnum)^2 * gamma .* uc.^2;
+    srcv = -(2*wnum)^2 * gammac .* uc.^2;
     vc=HelmholtzSolve('Homogeneous_Robin',SrcInfo,BdaryInfo,ks,P,E,T,2*wnum,refc,sigmac,srcv);
 
     Hc=sigmac.*abs(uc + vc).^2;
@@ -49,7 +50,7 @@ for ks=1:Ns
         src_v2=-sigmac.*rz.*conj(uc + vc);        
         v2c=HelmholtzSolve('Homogeneous_Robin',SrcInfo,BdaryInfo,ks,P,E,T,2*wnum,refc,sigmac,src_v2);
 
-        src_u3=-2*(2*wnum)^2*gamma.*uc.*v2c;        
+        src_u3=-2*(2*wnum)^2*gammac.*uc.*v2c;        
         u3c=HelmholtzSolve('Homogeneous_Dirichlet',SrcInfo,BdaryInfo,ks,P,E,T,wnum,refc,sigmac,src_u3);
         
         %wcg=tri2grid(P,T,wc,x,y);
@@ -60,13 +61,17 @@ for ks=1:Ns
         %pause;
     
         % the gradient w.r.t n            
-        if strcmp(MinVar,'Ref')||strcmp(MinVar,'All')
+        if ismember("Ref",MinVar)
             g(1:M)=g(1:M)+2*wnum^2*real(uc.*u2c + 2^2*vc.*v2c + uc.*u3c)*dx*dy;
         end
         % the gradient w.r.t sigma
-        if strcmp(MinVar,'Sigma')||strcmp(MinVar,'All')
+        if ismember("Sigma",MinVar)
             g(M+1:2*M)=g(M+1:2*M)+(rz.*abs(uc + vc).^2 ...
                 +2*wnum*real(1i*uc.*u2c + 2i*vc.*v2c + 1i*uc.*u3c))*dx*dy;
+        end
+        % the gradient w.r.t. gamma
+        if ismember("gamma",MinVar)
+            g(2*M+1:3*M)=g(2*M+1:3*M)+2*(2*wnum)^2*real(uc.^2.*v2c)*dx*dy;
         end
         
     end
