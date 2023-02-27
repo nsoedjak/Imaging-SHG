@@ -15,7 +15,7 @@
 % \Delta v + (2k)^2 (1+n) v +i 2k \sigma v = -(2k)^2 gamma u^2
 % v + ik n*grad v = 0
 %
-% Internal data: H = \sigma |u + v|^2
+% Internal data: H = \sigma (|u|^2 + |v|^2)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clear all;  close all;
@@ -25,7 +25,7 @@ tic; tb=toc;
 % Load geometrical information on the domain
 load 'geo-2b2';
 
-MaxIT=50;
+MaxIT=300;
 
 Ns=36;
 
@@ -33,7 +33,7 @@ Ns=36;
 wnum=1;
 
 % Decide which parameter to be reconstructed
-MinVar=["gamma"]; % Subset of ["Ref","Sigma", "gamma"]
+MinVar=["gamma"]; % Subset of ["Ref","Sigma","gamma"]
 
 % Create a Cartesian grid for inversion
 dx=0.025; x=0:dx:2;
@@ -117,7 +117,7 @@ disp(' ');
 disp('Generating synthetic data .......');
 disp(' ');
 
-noiselevel=0.0; % set noise level
+noiselevel=0.01; % set noise level
 srczero=zeros(M,1);
 Hm=zeros(M,Ns);
 for ks=1:Ns
@@ -128,8 +128,8 @@ for ks=1:Ns
     srcv = -(2*wnum)^2 * gammat .* ut.^2;
     vt=HelmholtzSolve('Homogeneous_Robin',SrcInfo,BdaryInfo,ks,P,E,T,2*wnum,reft,sigmat,srcv);
 
-    Ht=sigmat.*abs(ut + vt).^2;
-    
+    Ht=sigmat.*(abs(ut).^2 + abs(vt).^2);
+
 
     %Plot data/solutions
     %utg=tri2grid(P,T,vt,x,y);
@@ -144,8 +144,8 @@ for ks=1:Ns
     % Add noise to data
 	Hm(:,ks)=Ht.*(1+noiselevel*2*(rand(M,1)-0.5));
     
-    disp(['Synthetic data generated for source #: ' num2str(ks)]);
-    disp('  ');
+%   disp(['Synthetic data generated for source #: ' num2str(ks)]);
+%   disp('  ');
 
     clear ut Ht;
 end
@@ -167,7 +167,7 @@ if ~ismember("Sigma",MinVar)
     sigma0=sigmat;
 end
 
-gamma0=0.02*ones(M,1);
+gamma0=0.3*ones(M,1);
 if ~ismember("gamma",MinVar)
     gamma0=gammat;
 end

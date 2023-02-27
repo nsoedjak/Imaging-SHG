@@ -25,7 +25,7 @@ for ks=1:Ns
     srcv = -(2*wnum)^2 * gammac .* uc.^2;
     vc=HelmholtzSolve('Homogeneous_Robin',SrcInfo,BdaryInfo,ks,P,E,T,2*wnum,refc,sigmac,srcv);
 
-    Hc=sigmac.*abs(uc + vc).^2;
+    Hc=sigmac.*(abs(uc).^2 + abs(vc).^2);
     
     %Hcg=tri2grid(P,T,Hc,x,y);
     %figure;
@@ -44,10 +44,10 @@ for ks=1:Ns
     if nargout > 1         
 
         % solve the adjoint equations
-        src_u2=-sigmac.*rz.*conj(uc + vc);        
+        src_u2=-sigmac.*rz.*conj(uc);        
         u2c=HelmholtzSolve('Homogeneous_Dirichlet',SrcInfo,BdaryInfo,ks,P,E,T,wnum,refc,sigmac,src_u2);
 
-        src_v2=-sigmac.*rz.*conj(uc + vc);        
+        src_v2=-sigmac.*rz.*conj(vc);        
         v2c=HelmholtzSolve('Homogeneous_Robin',SrcInfo,BdaryInfo,ks,P,E,T,2*wnum,refc,sigmac,src_v2);
 
         src_u3=-2*(2*wnum)^2*gammac.*uc.*v2c;        
@@ -79,15 +79,15 @@ for ks=1:Ns
 end
 
 % Add regularization terms to both the objective function and its gradients
-betan=0e-16; betaS=1*betan; % regularization parameters
+betan=1e-9; betaS=1*betan; betaG=1*betan; % regularization parameters
 
-if strcmp(MinVar,'Ref')||strcmp(MinVar,'All')
+if ismember("Ref", MinVar)
     [Rx,Ry] = pdegrad(P,T,refc);
     Rx1=pdeprtni(P,T,Rx); Ry1=pdeprtni(P,T,Ry);
     f=f+0.5*betan*sum(Rx1.^2+Ry1.^2)*dx*dy;
-    if nargout >1
-        [Rxx, Rxy]=pdegrad(P,T,Rx1); [Ryx, Gyy]=pdegrad(P,T,Ry1);
-        Rx2=pdeprtni(P,T,Rxx); Ry2=pdeprtni(P,T,Gyy);
+    if nargout > 1
+        [Rxx, Rxy]=pdegrad(P,T,Rx1); [Ryx, Ryy]=pdegrad(P,T,Ry1);
+        Rx2=pdeprtni(P,T,Rxx); Ry2=pdeprtni(P,T,Ryy);
         Deltan=Rx2+Ry2;
         g(1:M)=g(1:M)-betan*Deltan*dx*dy;
         for j=1:ne
@@ -96,11 +96,11 @@ if strcmp(MinVar,'Ref')||strcmp(MinVar,'All')
         end
     end
 end
-if strcmp(MinVar,'Sigma')||strcmp(MinVar,'All')
+if ismember("Sigma", MinVar)
     [Sx,Sy] = pdegrad(P,T,sigmac);
     Sx1=pdeprtni(P,T,Sx); Sy1=pdeprtni(P,T,Sy);
     f=f+0.5*betaS*sum(Sx1.^2+Sy1.^2)*dx*dy;
-    if nargout >1
+    if nargout > 1
         [Sxx, Sxy]=pdegrad(P,T,Sx1); [Syx, Syy]=pdegrad(P,T,Sy1);
         Sx2=pdeprtni(P,T,Sxx); Sy2=pdeprtni(P,T,Syy);
         DeltaSigma=Sx2+Sy2;
@@ -108,6 +108,21 @@ if strcmp(MinVar,'Sigma')||strcmp(MinVar,'All')
         for j=1:ne
             nd=BdaryInfo(1,j);
             g(M+nd)=g(M+nd)+betaS*(BdaryInfo(3,j)*Sx1(nd)+BdaryInfo(4,j)*Sy1(nd))*BdaryInfo(5,j);
+        end
+    end
+end
+if ismember("gamma", MinVar)
+    [Gx,Gy] = pdegrad(P,T,gammac);
+    Gx1=pdeprtni(P,T,Gx); Gy1=pdeprtni(P,T,Gy);
+    f=f+0.5*betaG*sum(Gx1.^2+Gy1.^2)*dx*dy;
+    if nargout > 1
+        [Gxx, Gxy]=pdegrad(P,T,Gx1); [Gyx, Gyy]=pdegrad(P,T,Gy1);
+        Gx2=pdeprtni(P,T,Gxx); Gy2=pdeprtni(P,T,Gyy);
+        DeltaGamma=Gx2+Gy2;
+        g(2*M+1:3*M)=g(2*M+1:3*M)-betaG*DeltaGamma*dx*dy;
+        for j=1:ne
+            nd=BdaryInfo(1,j);
+            g(2*M+nd)=g(2*M+nd)+betaG*(BdaryInfo(3,j)*Gx1(nd)+BdaryInfo(4,j)*Gy1(nd))*BdaryInfo(5,j);
         end
     end
 end
