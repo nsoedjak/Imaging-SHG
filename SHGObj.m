@@ -3,7 +3,7 @@
 % respect to the optimization variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [f g]=SHGObj(X,MinVar,x,y,dx,dy,Nx,Ny,P,E,T,...
-    Ns,Hm,SrcInfo,BdaryInfo,wnum)
+    Ns,Hm,SrcInfo,BdaryInfo,wnum,betan,betaS,betaG)
 
 M=Nx*Ny; % total number of nodes in the mesh
 ne = size(SrcInfo,2); % number of edges/nodes on the domain boundary
@@ -79,7 +79,6 @@ for ks=1:Ns
 end
 
 % Add regularization terms to both the objective function and its gradients
-betan=1e-9; betaS=1*betan; betaG=1*betan; % regularization parameters
 
 if ismember("Ref", MinVar)
     [Rx,Ry] = pdegrad(P,T,refc);

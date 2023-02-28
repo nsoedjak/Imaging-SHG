@@ -55,11 +55,11 @@ MinVar=["gamma"]; % Subset of ["Ref","Sigma","gamma"]
 noiselevel=0.00; % set noise level
 betan=0e-9; betaS=1*betan; betaG=1*betan; % regularization parameters
 
-MaxIT=500;
+MaxIT=20;
 
 Ns=36;
 
-wnum=1; % wave number k
+wnum=1; % Set wave number
 
 % Set true parameters for wave propagation
 rec1=[0.5 0.8; 0.5 0.8]; 
@@ -84,8 +84,12 @@ end
 
 gammat=0.2+0.2*ind_rec(P,rec1)+0.4*ind_rec(P,rec2)+0.6*ind_rec(P,rec3); %true nonlinear susceptibility
 
-
 % Setup initial guess
+disp(' ');
+disp(' ');
+disp('Setting initial guess .......');
+disp(' ');
+
 ref0=0.2*ones(M,1);
 if ~ismember("Ref",MinVar)
     ref0=reft;
@@ -102,6 +106,8 @@ if ~ismember("gamma",MinVar)
 end
 
 X0=[ref0' sigma0' gamma0']';
+
+disp('Finished setting initial guess .......');
 %-----------------------End of adjustable parameters-----------------------
 
 
@@ -111,37 +117,8 @@ X0=[ref0' sigma0' gamma0']';
 
 
 
-%Plot initial guesses
-if ismember("Ref",MinVar)
-    ref0g=tri2grid(P,T,ref0,x,y);
-    figure;
-    ph = pcolor(x,y,ref0g); axis tight; colorbar('SouthOutside');
-    axis square; axis off; shading interp;
-    ph.ZData = ph.CData;
-    caxis([0.2 0.8]);
-    title('initial guess of n');
-    drawnow;
-end
-if ismember("Sigma",MinVar)
-    sigma0g=tri2grid(P,T,sigma0,x,y);
-    figure;
-    ph = pcolor(x,y,sigma0g); axis tight; colorbar('SouthOutside');
-    axis square; axis off; shading interp;
-    ph.ZData = ph.CData;
-    caxis([0.01 0.07]);
-    title('initial guess of \sigma');
-    drawnow;
-end
-if ismember("gamma",MinVar)
-    gamma0g=tri2grid(P,T,gamma0,x,y);
-    figure;
-    ph = pcolor(x,y,gamma0g); axis tight; colorbar('SouthOutside');
-    axis square; axis off; shading interp;
-    ph.ZData = ph.CData;
-    caxis([0.2 0.8]);
-    title('initial guess of \gamma');
-    drawnow;
-end
+
+
 
 % Setup information on sources and boundary edges
 SrcInfo=SetSources(Ns);
@@ -319,7 +296,7 @@ save Exp01-Results reft ref0 refr sigmat sigma0 sigmar -ASCII
 te=toc;
 disp(' ');
 disp(' ');
-disp(['The code ran for: ' num2str(te-tb) ' seconds']);
+disp(['The code run for: ' num2str(te-tb) ' seconds']);
 disp(' ');
 disp(' ');
 
