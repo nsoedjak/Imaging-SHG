@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% SHG: Second harmonic generation image reconstruction with least-square 
+% SHG: Second harmonic generation image reconstruction with least-squares 
 %       minimization method
 %
 % Authors: Kui Ren  (kr2002@columbia.edu), Nathan Soedjak (ns3572@columbia.edu)
@@ -25,7 +25,7 @@ tic; tb=toc;
 % Load geometrical information on the domain
 load 'geo-2b2';
 
-% Create a Cartesian grid for inversion
+% Create the discretized domain (0,2)x(0,2)
 dx=0.025; x=0:dx:2;
 dy=0.025; y=0:dy:2;
 Nx=length(x);
@@ -47,10 +47,10 @@ M=Nx*Ny; % total number of nodes in the mesh
 
 
 
-%----------------------Start of adjustable parameters----------------------
+%--------------------Start of user-adjustable parameters-------------------
 
 % Decide which parameter to be reconstructed
-MinVar=["gamma"]; % Subset of ["Ref","Sigma","gamma"]
+MinVar=["Ref"]; % Subset of ["Ref","Sigma","gamma"]
 
 noiselevel=0.00; % set noise level
 betan=0e-9; betaS=1*betan; betaG=1*betan; % regularization parameters
@@ -65,16 +65,21 @@ wnum=1; % wave number k
 rec1=[0.5 0.8; 0.5 0.8]; 
 rec2=[1.4 1.7; 1.4 1.7];
 rec3=[1.0 1.8; 0.3 0.6];
+rec4=[0.4 0.7; 0.2 0.9];
+rec5=[0.6 1.5; 1.5 1.8];
+rec6=[1.4 1.7; 0.6 0.8];
 circ1=[1.0 1.5 0.2];
 circ2=[1.5 1.0 0.3];
 
 %reft=0.3*ones(M,1); % true refractive index
 %reft=(0.1+0.2*exp(-(P(1,:)-1).^2-(P(2,:)-1).^2))';
-reft=0.2+0.2*ind_rec(P,rec1)+0.4*ind_rec(P,rec2)+0.6*ind_rec(P,rec3);
+%reft=0.2+0.2*ind_rec(P,rec1)+0.4*ind_rec(P,rec2)+0.6*ind_rec(P,rec3);
+reft=0.1+0.1*ind_rec(P,rec4)+0.2*ind_rec(P,rec5)+0.3*ind_rec(P,rec6);
 
 %sigmat=(0.1+0.2*exp(-(P(1,:)-1).^2-(P(2,:)-1).^2))';
 %sigmat=0.2+0.2*ind_rec(P,rec1)+0.4*ind_rec(P,rec2)+0.6*ind_rec(P,rec3);
 sigmat=0.02*ones(M,1); % true absorption
+rng(0); % set seed for random number generator
 for k1=1:10
     for k2=1:10
         dom=[0.5+(k1-1)*0.1 0.5+k1*0.1;0.5+(k2-1)*0.1 0.5+k2*0.1];
@@ -85,8 +90,8 @@ end
 gammat=0.2+0.2*ind_rec(P,rec1)+0.4*ind_rec(P,rec2)+0.6*ind_rec(P,rec3); %true nonlinear susceptibility
 
 
-% Setup initial guess
-ref0=0.2*ones(M,1);
+% Set up initial guess
+ref0=0.1*ones(M,1);
 if ~ismember("Ref",MinVar)
     ref0=reft;
 end
@@ -102,7 +107,7 @@ if ~ismember("gamma",MinVar)
 end
 
 X0=[ref0' sigma0' gamma0']';
-%-----------------------End of adjustable parameters-----------------------
+%---------------------End of user-adjustable parameters--------------------
 
 
 
@@ -118,8 +123,8 @@ if ismember("Ref",MinVar)
     ph = pcolor(x,y,ref0g); axis tight; colorbar('SouthOutside');
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
-    caxis([0.2 0.8]);
-    title('initial guess of n');
+    caxis([0.1 0.4]);
+    title('initial guess of \eta');
     drawnow;
 end
 if ismember("Sigma",MinVar)
@@ -153,8 +158,8 @@ if ismember("Ref", MinVar)
     ph = pcolor(x,y,reftg); axis tight; colorbar('SouthOutside');
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
-    caxis([0.2 0.8]);
-    title('true n');
+    caxis([0.1 0.4]);
+    title('true \eta');
     drawnow;
 end
 if ismember("Sigma", MinVar)
@@ -174,7 +179,7 @@ if ismember("gamma", MinVar)
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
     caxis([0.2 0.8]);
-    title('true gamma');
+    title('true \gamma');
     drawnow;
 end
 
@@ -285,8 +290,8 @@ if ismember("Ref",MinVar)
     ph = pcolor(x,y,refrg); axis tight; colorbar('SouthOutside');
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
-    caxis([0.2 0.8]);
-    title('recovered n');
+    caxis([0.1 0.4]);
+    title('recovered \eta');
     drawnow;
 end
 if ismember("Sigma",MinVar)
@@ -306,7 +311,7 @@ if ismember("gamma",MinVar)
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
     caxis([0.2 0.8]);
-    title('recovered gamma');
+    title('recovered \gamma');
     drawnow;
 end
 
