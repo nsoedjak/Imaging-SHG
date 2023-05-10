@@ -15,10 +15,13 @@
 % \Delta v + (2k)^2 (1+n) v +i 2k \sigma v = -(2k)^2 \gamma u^2
 % v + i2k n*grad v = 0
 %
-% Internal data: H = \sigma (|u|^2 + |v|^2)
+% Internal data: H = \Gamma\sigma (|u|^2 + |v|^2)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-clear all;  close all;
+% clear all;  close all;
+% 
+
+function SHG(MinVar, Ns, noiselevel, MaxIT, betan, betaS, betaG, betag)
 
 tic; tb=toc;
 
@@ -42,22 +45,15 @@ Ny=length(y);
 M=Nx*Ny; % total number of nodes in the mesh
 
 
-
-
-
-
-
-%--------------------Start of user-adjustable parameters-------------------
-
 % Decide which parameter to be reconstructed
-MinVar=["Ref"]; % Subset of ["Ref","Sigma","gamma"]
+%MinVar=["Gamma"]; % Subset of ["Ref","Sigma","Gamma","gamma"]
 
-noiselevel=0.00; % set noise level
-betan=0e-9; betaS=1*betan; betaG=1*betan; % regularization parameters
+%noiselevel=0.00; % set noise level
+%betan=0e-9; betaS=1*betan; betaG=1*betan; betag=1*betan; % regularization parameters
 
-MaxIT=500;
+%MaxIT=500;
 
-Ns=36;
+%Ns=36;
 
 wnum=1; % wave number k
 
@@ -65,9 +61,10 @@ wnum=1; % wave number k
 rec1=[0.5 0.8; 0.5 0.8]; 
 rec2=[1.4 1.7; 1.4 1.7];
 rec3=[1.0 1.8; 0.3 0.6];
-rec4=[0.4 0.7; 0.2 0.9];
+rec4=[0.4 0.8; 0.2 1.1];
 rec5=[0.6 1.5; 1.5 1.8];
-rec6=[1.4 1.7; 0.6 0.8];
+rec6=[1.3 1.7; 0.4 0.8];
+rec7=[0.7 1.3; 0.7 1.3];
 circ1=[1.0 1.5 0.2];
 circ2=[1.5 1.0 0.3];
 
@@ -87,6 +84,8 @@ for k1=1:10
     end
 end
 
+Gammat=0.2+0.2*ind_rec(P,rec7);
+
 gammat=0.2+0.2*ind_rec(P,rec1)+0.4*ind_rec(P,rec2)+0.6*ind_rec(P,rec3); %true nonlinear susceptibility
 
 
@@ -101,13 +100,17 @@ if ~ismember("Sigma",MinVar)
     sigma0=sigmat;
 end
 
+Gamma0=5*ones(M,1);
+if ~ismember("Gamma",MinVar)
+    Gamma0=Gammat;
+end
+
 gamma0=0.3*ones(M,1);
 if ~ismember("gamma",MinVar)
     gamma0=gammat;
 end
 
-X0=[ref0' sigma0' gamma0']';
-%---------------------End of user-adjustable parameters--------------------
+X0=[ref0' sigma0' Gamma0' gamma0']';
 
 
 
@@ -137,6 +140,16 @@ if ismember("Sigma",MinVar)
     title('initial guess of \sigma');
     drawnow;
 end
+if ismember("Gamma",MinVar)
+    Gamma0g=tri2grid(P,T,Gamma0,x,y);
+    figure;
+    ph = pcolor(x,y,Gamma0g); axis tight; colorbar('SouthOutside');
+    axis square; axis off; shading interp;
+    ph.ZData = ph.CData;
+    caxis([0.2 0.4]);
+    title('initial guess of \Gamma');
+    drawnow;
+end
 if ismember("gamma",MinVar)
     gamma0g=tri2grid(P,T,gamma0,x,y);
     figure;
@@ -152,6 +165,8 @@ end
 SrcInfo=SetSources(Ns);
 BdaryInfo=SetBdaryInfo(P,E);
 
+
+%Plot true coefficients
 if ismember("Ref", MinVar)
     reftg=tri2grid(P,T,reft,x,y);
     figure;
@@ -170,6 +185,16 @@ if ismember("Sigma", MinVar)
     ph.ZData = ph.CData;
     %caxis([0.01 0.07]);
     title('true \sigma');
+    drawnow;
+end
+if ismember("Gamma", MinVar)
+    Gammatg=tri2grid(P,T,Gammat,x,y);
+    figure;
+    ph = pcolor(x,y,Gammatg); axis tight; colorbar('SouthOutside');
+    axis square; axis off; shading interp;
+    ph.ZData = ph.CData;
+    caxis([0.2 0.4]);
+    title('true \Gamma');
     drawnow;
 end
 if ismember("gamma", MinVar)
@@ -199,7 +224,7 @@ for ks=1:Ns
     srcv = -(2*wnum)^2 * gammat .* ut.^2;
     vt=HelmholtzSolve('Homogeneous_Robin',SrcInfo,BdaryInfo,ks,P,E,T,2*wnum,reft,sigmat,srcv);
 
-    Ht=sigmat.*(abs(ut).^2 + abs(vt).^2);
+    Ht=Gammat.*sigmat.*(abs(ut).^2 + abs(vt).^2);
 
 
     %Plot data/solutions
@@ -241,7 +266,7 @@ disp(' ');
 disp('Minimizing objective function .......');
 disp(' ');
 
-f=@(X) SHGObj(X,MinVar,x,y,dx,dy,Nx,Ny,P,E,T,Ns,Hm,SrcInfo,BdaryInfo,wnum,betan,betaS,betaG);
+f=@(X) SHGObj(X,MinVar,x,y,dx,dy,Nx,Ny,P,E,T,Ns,Hm,SrcInfo,BdaryInfo,wnum,betan,betaS,betaG,betag);
 
 if strcmp(OptimMethod,'UNCON')
     options=optimoptions(@fminunc,'Algorithm','quasi-newton', ...
@@ -282,7 +307,8 @@ disp(' ');
 
 refr=X(1:M);
 sigmar=X(M+1:2*M);
-gammar=X(2*M+1:3*M);
+Gammar=X(2*M+1:3*M);
+gammar=X(3*M+1:4*M);
 % Plot reconstruction results
 if ismember("Ref",MinVar)
     refrg=tri2grid(P,T,refr,x,y);
@@ -302,6 +328,16 @@ if ismember("Sigma",MinVar)
     ph.ZData = ph.CData;
     %caxis([0.01 0.07]);
     title('recovered \sigma');
+    drawnow;
+end
+if ismember("Gamma",MinVar)
+    Gammarg=tri2grid(P,T,Gammar,x,y);
+    figure;
+    ph = pcolor(x,y,Gammarg); axis tight; colorbar('SouthOutside');
+    axis square; axis off; shading interp;
+    ph.ZData = ph.CData;
+    caxis([0.2 0.4]);
+    title('recovered \Gamma');
     drawnow;
 end
 if ismember("gamma",MinVar)
