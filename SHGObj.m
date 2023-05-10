@@ -72,8 +72,7 @@ for ks=1:Ns
         end
         % the gradient w.r.t. Gamma
         if ismember("Gamma",MinVar)
-            g(2*M+1:3*M)=g(2*M+1:3*M)+rz.*sigmac.*(abs(uc).^2 + abs(vc).^2);
-            disp(min(rz.*sigmac.*(abs(uc).^2 + abs(vc).^2)));
+            g(2*M+1:3*M)=g(2*M+1:3*M)+rz.*sigmac.*(abs(uc).^2 + abs(vc).^2)*dx*dy;
         end
         % the gradient w.r.t. gamma
         if ismember("gamma",MinVar)

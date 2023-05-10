@@ -100,7 +100,7 @@ if ~ismember("Sigma",MinVar)
     sigma0=sigmat;
 end
 
-Gamma0=5*ones(M,1);
+Gamma0=0.2*ones(M,1);
 if ~ismember("Gamma",MinVar)
     Gamma0=Gammat;
 end
