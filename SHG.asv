@@ -81,8 +81,8 @@ for k1=1:10
     end
 end
 
-Gammat=0.2+0.2*ind_rec(P,rec7);
-%Gammat=ones(M,1);
+%Gammat=0.2+0.2*ind_rec(P,rec7);
+Gammat=ones(M,1);
 
 gammat=0.2+0.2*ind_rec(P,rec1)+0.4*ind_rec(P,rec2)+0.6*ind_rec(P,rec3); %true nonlinear susceptibility
 
@@ -253,15 +253,16 @@ function stop = outfun(x_,optimValues,state)
          %case 'init'
              %hold on
          case 'iter'
-             if rem(optimValues.iteration, 5) == 0 && optimValues.iteration ~= 0
+             fprintf('this is iteration %.0f',optimValues.iteration);
+             if rem(optimValues.iteration, 5) == 0
                  % Concatenate current point and objective function
                  % value with history. x must be a row vector.
 %                  history_iter = [history_iter; optimValues.iteration];
 %                  history_fval = [history_fval; optimValues.fval];
 %                  history_x = [history_x; x];
-                 refr=x_(1:M);
-                 sigmar=x_(M+1:2*M);
-                 gammar=x_(2*M+1:3*M);
+                 refr=x(1:M);
+                 sigmar=x(M+1:2*M);
+                 gammar=x(2*M+1:3*M);
                  % Plot intermediate reconstruction results
                  if ismember("Ref",MinVar)
                      refrg=tri2grid(P,T,refr,x,y);

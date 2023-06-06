@@ -2,7 +2,7 @@
 % This function evaluate the objective function and its gradients with 
 % respect to the optimization variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [f g]=SHGObj(X,MinVar,x,y,dx,dy,Nx,Ny,P,E,T,...
+function [f g]=SHGObj(X,Gammat,MinVar,x,y,dx,dy,Nx,Ny,P,E,T,...
     Ns,Hm,SrcInfo,BdaryInfo,wnum,betan,betaS,betaG,betag)
 
 M=Nx*Ny; % total number of nodes in the mesh
@@ -10,11 +10,10 @@ ne = size(SrcInfo,2); % number of edges/nodes on the domain boundary
 
 refc=X(1:M);% current value of n
 sigmac=X(M+1:2*M); % current value of sigma
-Gammac=X(2*M+1:3*M); %current value of Gamma
-gammac=X(3*M+1:4*M); %current value of gamma
+gammac=X(2*M+1:3*M); %current value of gamma
 
 f=0.0;
-g=zeros(4*M,1);
+g=zeros(3*M,1);
 for ks=1:Ns
     
     Hc=zeros(M,1); % predicted data
@@ -26,7 +25,7 @@ for ks=1:Ns
     srcv = -(2*wnum)^2 * gammac .* uc.^2;
     vc=HelmholtzSolve('Homogeneous_Robin',SrcInfo,BdaryInfo,ks,P,E,T,2*wnum,refc,sigmac,srcv);
 
-    Hc=Gammac.*sigmac.*(abs(uc).^2 + abs(vc).^2);
+    Hc=Gammat.*sigmac.*(abs(uc).^2 + abs(vc).^2);
     
     %Hcg=tri2grid(P,T,Hc,x,y);
     %figure;
@@ -45,10 +44,10 @@ for ks=1:Ns
     if nargout > 1         
 
         % solve the adjoint equations
-        src_u2=-Gammac.*sigmac.*rz.*conj(uc);        
+        src_u2=-Gammat.*sigmac.*rz.*conj(uc);        
         u2c=HelmholtzSolve('Homogeneous_Dirichlet',SrcInfo,BdaryInfo,ks,P,E,T,wnum,refc,sigmac,src_u2);
 
-        src_v2=-Gammac.*sigmac.*rz.*conj(vc);        
+        src_v2=-Gammat.*sigmac.*rz.*conj(vc);        
         v2c=HelmholtzSolve('Homogeneous_Robin',SrcInfo,BdaryInfo,ks,P,E,T,2*wnum,refc,sigmac,src_v2);
 
         src_u3=-2*(2*wnum)^2*gammac.*uc.*v2c;        
@@ -67,16 +66,12 @@ for ks=1:Ns
         end
         % the gradient w.r.t sigma
         if ismember("Sigma",MinVar)
-            g(M+1:2*M)=g(M+1:2*M)+(rz.*Gammac.*(abs(uc).^2 + abs(vc).^2) ...
+            g(M+1:2*M)=g(M+1:2*M)+(rz.*Gammat.*(abs(uc).^2 + abs(vc).^2) ...
                 +2*wnum*real(1i*uc.*u2c + 2i*vc.*v2c + 1i*uc.*u3c))*dx*dy;
-        end
-        % the gradient w.r.t. Gamma
-        if ismember("Gamma",MinVar)
-            g(2*M+1:3*M)=g(2*M+1:3*M)+rz.*sigmac.*(abs(uc).^2 + abs(vc).^2)*dx*dy;
         end
         % the gradient w.r.t. gamma
         if ismember("gamma",MinVar)
-            g(3*M+1:4*M)=g(3*M+1:4*M)+2*(2*wnum)^2*real(uc.^2.*v2c)*dx*dy;
+            g(2*M+1:3*M)=g(2*M+1:3*M)+2*(2*wnum)^2*real(uc.^2.*v2c)*dx*dy;
         end
         
     end
@@ -115,21 +110,6 @@ if ismember("Sigma", MinVar)
         end
     end
 end
-if ismember("Gamma", MinVar)
-    [Gx,Gy] = pdegrad(P,T,Gammac);
-    Gx1=pdeprtni(P,T,Gx); Gy1=pdeprtni(P,T,Gy);
-    f=f+0.5*betaG*sum(Gx1.^2+Gy1.^2)*dx*dy;
-    if nargout > 1
-        [Gxx, Gxy]=pdegrad(P,T,Gx1); [Gyx, Gyy]=pdegrad(P,T,Gy1);
-        Gx2=pdeprtni(P,T,Gxx); Gy2=pdeprtni(P,T,Gyy);
-        DeltaGamma=Gx2+Gy2;
-        g(2*M+1:3*M)=g(2*M+1:3*M)-betaG*DeltaGamma*dx*dy;
-        for j=1:ne
-            nd=BdaryInfo(1,j);
-            g(2*M+nd)=g(2*M+nd)+betaG*(BdaryInfo(3,j)*Gx1(nd)+BdaryInfo(4,j)*Gy1(nd))*BdaryInfo(5,j);
-        end
-    end
-end
 if ismember("gamma", MinVar)
     [gx,gy] = pdegrad(P,T,gammac);
     gx1=pdeprtni(P,T,gx); gy1=pdeprtni(P,T,gy);
@@ -138,10 +118,10 @@ if ismember("gamma", MinVar)
         [gxx, gxy]=pdegrad(P,T,gx1); [gyx, gyy]=pdegrad(P,T,gy1);
         gx2=pdeprtni(P,T,gxx); gy2=pdeprtni(P,T,gyy);
         Deltagamma=gx2+gy2;
-        g(3*M+1:4*M)=g(3*M+1:4*M)-betag*Deltagamma*dx*dy;
+        g(2*M+1:3*M)=g(2*M+1:3*M)-betag*Deltagamma*dx*dy;
         for j=1:ne
             nd=BdaryInfo(1,j);
-            g(3*M+nd)=g(3*M+nd)+betag*(BdaryInfo(3,j)*gx1(nd)+BdaryInfo(4,j)*gy1(nd))*BdaryInfo(5,j);
+            g(2*M+nd)=g(2*M+nd)+betag*(BdaryInfo(3,j)*gx1(nd)+BdaryInfo(4,j)*gy1(nd))*BdaryInfo(5,j);
         end
     end
 end
