@@ -21,7 +21,7 @@
 % clear all;  close all;
 % 
 
-function SHG(MinVar, Ns, noiselevel, MaxIT, betan, betaS, betaG, betag, geo)
+function SHG(MinVar, Ns, noiselevel, MaxIT, iter_plot, betan, betaS, betaG, betag, geo)
 
 tic; tb=toc;
 
@@ -40,17 +40,6 @@ Ny=length(y);
 % title('Finite element mesh');
 
 M=Nx*Ny; % total number of nodes in the mesh
-
-
-% Decide which parameter to be reconstructed
-%MinVar=["Gamma"]; % Subset of ["Ref","Sigma","Gamma","gamma"]
-
-%noiselevel=0.00; % set noise level
-%betan=0e-9; betaS=1*betan; betaG=1*betan; betag=1*betan; % regularization parameters
-
-%MaxIT=500;
-
-%Ns=36;
 
 wnum=1; % wave number k
 
@@ -181,6 +170,17 @@ if ismember("gamma", MinVar)
     title('true \gamma');
     drawnow;
 end
+if ismember("Gamma", MinVar)
+    Gammatg=tri2grid(P,T,Gammat,x,y);
+    figure;
+    ph = pcolor(x,y,Gammatg); axis tight; colorbar('SouthOutside');
+    axis square; axis off; shading interp;
+    ph.ZData = ph.CData;
+    caxis([0.2 0.4]);
+    title('true \Gamma');
+    drawnow;
+end
+
 
 % Generating synthetic data
 disp(' ');
@@ -253,7 +253,7 @@ function stop = outfun(x_,optimValues,state)
          %case 'init'
              %hold on
          case 'iter'
-             if rem(optimValues.iteration, 5) == 0 && optimValues.iteration ~= 0
+             if rem(optimValues.iteration, iter_plot) == 0 && optimValues.iteration ~= 0
                  % Concatenate current point and objective function
                  % value with history. x must be a row vector.
 %                  history_iter = [history_iter; optimValues.iteration];
@@ -300,9 +300,10 @@ function stop = outfun(x_,optimValues,state)
      end
  end
 
+GammaFlag = ismember("Gamma", MinVar);
 
-
-f=@(X) SHGObj(X,Gammat,MinVar,x,y,dx,dy,Nx,Ny,P,E,T,Ns,Hm,SrcInfo,BdaryInfo,wnum,betan,betaS,betaG,betag);
+f=@(X) SHGObj(X,GammaFlag,Gammat,MinVar,x,y,dx,dy,Nx,Ny,P,E,T,Ns,Hm,...
+    SrcInfo,BdaryInfo,wnum,betan,betaS,betaG,betag);
 
 if strcmp(OptimMethod,'UNCON')
     options=optimoptions(@fminunc,'OutputFcn',@outfun,'Algorithm','quasi-newton', ...

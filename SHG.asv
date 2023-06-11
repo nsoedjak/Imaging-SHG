@@ -16,12 +16,13 @@
 % v + i2k n*grad v = 0
 %
 % Internal data: H = \Gamma\sigma (|u|^2 + |v|^2)
+% In this code, \Gamma is assumed to be KNOWN
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % clear all;  close all;
 % 
 
-function SHG(MinVar, Ns, noiselevel, MaxIT, betan, betaS, betaG, betag, geo)
+function SHG(MinVar, GammaFlag, Ns, noiselevel, MaxIT, betan, betaS, betaG, betag, geo)
 
 tic; tb=toc;
 
@@ -40,17 +41,6 @@ Ny=length(y);
 % title('Finite element mesh');
 
 M=Nx*Ny; % total number of nodes in the mesh
-
-
-% Decide which parameter to be reconstructed
-%MinVar=["Gamma"]; % Subset of ["Ref","Sigma","Gamma","gamma"]
-
-%noiselevel=0.00; % set noise level
-%betan=0e-9; betaS=1*betan; betaG=1*betan; betag=1*betan; % regularization parameters
-
-%MaxIT=500;
-
-%Ns=36;
 
 wnum=1; % wave number k
 
@@ -81,8 +71,8 @@ for k1=1:10
     end
 end
 
-%Gammat=0.2+0.2*ind_rec(P,rec7);
-Gammat=ones(M,1);
+Gammat=0.2+0.2*ind_rec(P,rec7);
+%Gammat=ones(M,1);
 
 gammat=0.2+0.2*ind_rec(P,rec1)+0.4*ind_rec(P,rec2)+0.6*ind_rec(P,rec3); %true nonlinear susceptibility
 
@@ -181,6 +171,17 @@ if ismember("gamma", MinVar)
     title('true \gamma');
     drawnow;
 end
+if ismember("Gamma", MinVar)
+    Gammatg=tri2grid(P,T,Gammat,x,y);
+    figure;
+    ph = pcolor(x,y,gammatg); axis tight; colorbar('SouthOutside');
+    axis square; axis off; shading interp;
+    ph.ZData = ph.CData;
+    caxis([0.2 0.8]);
+    title('true \gamma');
+    drawnow;
+end
+
 
 % Generating synthetic data
 disp(' ');
@@ -253,16 +254,15 @@ function stop = outfun(x_,optimValues,state)
          %case 'init'
              %hold on
          case 'iter'
-             fprintf('this is iteration %.0f',optimValues.iteration);
-             if rem(optimValues.iteration, 5) == 0
+             if rem(optimValues.iteration, 20) == 0 && optimValues.iteration ~= 0
                  % Concatenate current point and objective function
                  % value with history. x must be a row vector.
 %                  history_iter = [history_iter; optimValues.iteration];
 %                  history_fval = [history_fval; optimValues.fval];
 %                  history_x = [history_x; x];
-                 refr=x(1:M);
-                 sigmar=x(M+1:2*M);
-                 gammar=x(2*M+1:3*M);
+                 refr=x_(1:M);
+                 sigmar=x_(M+1:2*M);
+                 gammar=x_(2*M+1:3*M);
                  % Plot intermediate reconstruction results
                  if ismember("Ref",MinVar)
                      refrg=tri2grid(P,T,refr,x,y);
