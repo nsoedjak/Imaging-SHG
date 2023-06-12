@@ -52,7 +52,7 @@ if ~GammaFlag %Gamma is known
             src_vc_2=-Gammat.*sigmac.*rz.*conj(vc);        
             vc_2=HelmholtzSolve('Homogeneous_Robin',SrcInfo,BdaryInfo,ks,P,E,T,2*wnum,refc,sigmac,src_vc_2);
     
-            src_uc_3=-2*(2*wnum)^2*gammac.*uc.*vc2;        
+            src_uc_3=-2*(2*wnum)^2*gammac.*uc.*vc_2;        
             uc_3=HelmholtzSolve('Homogeneous_Dirichlet',SrcInfo,BdaryInfo,ks,P,E,T,wnum,refc,sigmac,src_uc_3);
             
             %wcg=tri2grid(P,T,wc,x,y);

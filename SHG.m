@@ -57,23 +57,30 @@ circ2=[1.5 1.0 0.3];
 %reft=0.3*ones(M,1); % true refractive index
 %reft=(0.1+0.2*exp(-(P(1,:)-1).^2-(P(2,:)-1).^2))';
 %reft=0.2+0.2*ind_rec(P,rec1)+0.4*ind_rec(P,rec2)+0.6*ind_rec(P,rec3);
-reft=0.1+0.1*ind_rec(P,rec4)+0.2*ind_rec(P,rec5)+0.3*ind_rec(P,rec6);
+%reft=0.1+0.03*ind_rec(P,rec4)+0.06*ind_rec(P,rec5)+0.1*ind_rec(P,rec6);
+rec_ref=[0.4 1.3; 1 1.5];
+reft=0.1+0.05*ind_rec(P,rec_ref);
 
 %sigmat=(0.1+0.2*exp(-(P(1,:)-1).^2-(P(2,:)-1).^2))';
 %sigmat=0.2+0.2*ind_rec(P,rec1)+0.4*ind_rec(P,rec2)+0.6*ind_rec(P,rec3);
-sigmat=0.02*ones(M,1); % true absorption
-rng(0); % set seed for random number generator
-for k1=1:10
-    for k2=1:10
-        dom=[0.5+(k1-1)*0.1 0.5+k1*0.1;0.5+(k2-1)*0.1 0.5+k2*0.1];
-        sigmat=sigmat+0.02*(sign(rand-0.5)+1)*ind_rec(P,dom);
-    end
-end
 
-Gammat=0.2+0.2*ind_rec(P,rec7);
+%sigmat=0.02*ones(M,1); % true absorption
+% rng(0); % set seed for random number generator
+% for k1=1:10
+%     for k2=1:10
+%         dom=[0.5+(k1-1)*0.1 0.5+k1*0.1;0.5+(k2-1)*0.1 0.5+k2*0.1];
+%         sigmat=sigmat+0.02*(sign(rand-0.5)+1)*ind_rec(P,dom);
+%     end
+% end
+sigmat=0.1+0.03*ind_rec(P,rec4)+0.06*ind_rec(P,rec5)+0.1*ind_rec(P,rec6);
+
+%gammat=0.2+0.06*ind_rec(P,rec1)+0.12*ind_rec(P,rec2)+0.2*ind_rec(P,rec3); %true nonlinear susceptibility
+rec_gamma=[1.2 1.8; 0.4 1.6];
+gammat=0.2+0.1*ind_rec(P,rec_gamma);
+
+%Gammat=0.2+0.1*ind_rec(P,rec7);
 %Gammat=ones(M,1);
-
-gammat=0.2+0.2*ind_rec(P,rec1)+0.4*ind_rec(P,rec2)+0.6*ind_rec(P,rec3); %true nonlinear susceptibility
+Gammat=0.2+0.06*ind_rec(P,rec1)+0.12*ind_rec(P,rec2)+0.2*ind_rec(P,rec3);
 
 
 % Set up initial guess
@@ -109,7 +116,7 @@ if ismember("Ref",MinVar)
     ph = pcolor(x,y,ref0g); axis tight; colorbar('SouthOutside');
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
-    caxis([0.1 0.4]);
+    caxis([0.1 0.15]);
     title('initial guess of \eta');
     drawnow;
 end
@@ -119,7 +126,7 @@ if ismember("Sigma",MinVar)
     ph = pcolor(x,y,sigma0g); axis tight; colorbar('SouthOutside');
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
-    caxis([0.02 0.06]);
+    caxis([0.1 0.2]);
     title('initial guess of \sigma');
     drawnow;
 end
@@ -129,7 +136,7 @@ if ismember("gamma",MinVar)
     ph = pcolor(x,y,gamma0g); axis tight; colorbar('SouthOutside');
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
-    caxis([0.2 0.8]);
+    caxis([0.2 0.3]);
     title('initial guess of \gamma');
     drawnow;
 end
@@ -146,7 +153,7 @@ if ismember("Ref", MinVar)
     ph = pcolor(x,y,reftg); axis tight; colorbar('SouthOutside');
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
-    caxis([0.1 0.4]);
+    caxis([0.1 0.15]);
     title('true \eta');
     drawnow;
 end
@@ -156,7 +163,7 @@ if ismember("Sigma", MinVar)
     ph = pcolor(x,y,sigmatg); axis tight; colorbar('SouthOutside');
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
-    caxis([0.02 0.06]);
+    caxis([0.1 0.2]);
     title('true \sigma');
     drawnow;
 end
@@ -166,7 +173,7 @@ if ismember("gamma", MinVar)
     ph = pcolor(x,y,gammatg); axis tight; colorbar('SouthOutside');
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
-    caxis([0.2 0.8]);
+    caxis([0.2 0.3]);
     title('true \gamma');
     drawnow;
 end
@@ -269,7 +276,7 @@ function stop = outfun(x_,optimValues,state)
                      ph = pcolor(x,y,refrg); axis tight; colorbar('SouthOutside');
                      axis square; axis off; shading interp;
                      ph.ZData = ph.CData;
-                     caxis([0.1 0.4]);
+                     caxis([0.1 0.15]);
                      title(sprintf('recovered \\eta after %.0f iterations', optimValues.iteration));
                      drawnow;
                 end
@@ -279,7 +286,7 @@ function stop = outfun(x_,optimValues,state)
                      ph = pcolor(x,y,sigmarg); axis tight; colorbar('SouthOutside');
                      axis square; axis off; shading interp;
                      ph.ZData = ph.CData;
-                     caxis([0.02 0.06]);
+                     caxis([0.1 0.2]);
                      title(sprintf('recovered \\sigma after %.0f iterations', optimValues.iteration));
                      drawnow;
                 end
@@ -289,7 +296,7 @@ function stop = outfun(x_,optimValues,state)
                      ph = pcolor(x,y,gammarg); axis tight; colorbar('SouthOutside');
                      axis square; axis off; shading interp;
                      ph.ZData = ph.CData;
-                     caxis([0.2 0.8]);
+                     caxis([0.2 0.3]);
                      title(sprintf('recovered \\gamma after %.0f iterations', optimValues.iteration));
                      drawnow;
                 end
@@ -353,7 +360,7 @@ if ismember("Ref",MinVar)
     ph = pcolor(x,y,refrg); axis tight; colorbar('SouthOutside');
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
-    caxis([0.1 0.4]);
+    caxis([0.1 0.15]);
     title('recovered \eta');
     drawnow;
 end
@@ -363,7 +370,7 @@ if ismember("Sigma",MinVar)
     ph = pcolor(x,y,sigmarg); axis tight; colorbar('SouthOutside');
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
-    caxis([0.02 0.06]);
+    caxis([0.1 0.2]);
     title('recovered \sigma');
     drawnow;
 end
@@ -373,7 +380,7 @@ if ismember("gamma",MinVar)
     ph = pcolor(x,y,gammarg); axis tight; colorbar('SouthOutside');
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
-    caxis([0.2 0.8]);
+    caxis([0.2 0.3]);
     title('recovered \gamma');
     drawnow;
 end

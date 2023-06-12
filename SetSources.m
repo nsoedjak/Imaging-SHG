@@ -12,11 +12,18 @@ function SrcInfo=SetSources(Ns)
 % The following setup is for the domain (0,2)x(0,2). This can
 % be changed for other type of domains.
 
+n = 9; %number of sources on each side
+h = 2/(n+1);
+
 % Source locations: bottom, right, top, left
-location=[0.2:0.2:1.8 2*ones(1,9) 1.8:-0.2:0.2 zeros(1,9);...
-          zeros(1,9) 0.2:0.2:1.8 2*ones(1,9) 1.8:-0.2:0.2];
+% location=[0.2:0.2:1.8 2*ones(1,9) 1.8:-0.2:0.2 zeros(1,9);...
+%           zeros(1,9) 0.2:0.2:1.8 2*ones(1,9) 1.8:-0.2:0.2];
+location=[h:h:2-h 2*ones(1,n) 2-h:-h:h zeros(1,n);...
+          zeros(1,n) h:h:2-h 2*ones(1,n) 2-h:-h:h];
+
 % The side of the boundary where the each source is located
-segment=[ones(1,9) 2*ones(1,9) 3*ones(1,9) 4*ones(1,9)]; 
+%segment=[ones(1,9) 2*ones(1,9) 3*ones(1,9) 4*ones(1,9)]; 
+segment=[ones(1,n) 2*ones(1,n) 3*ones(1,n) 4*ones(1,n)]; 
 
 if Ns>length(segment)
 	disp('Error in setting # of sources!');
