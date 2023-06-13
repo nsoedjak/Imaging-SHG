@@ -2,7 +2,7 @@
 % This function evaluate the objective function and its gradients with 
 % respect to the optimization variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [f g]=SHGObj(X,GammaFlag,Gammat,MinVar,x,y,dx,dy,Nx,Ny,P,E,T,...
+function [f g]=SHGObj(X,Gammat,MinVar,x,y,dx,dy,Nx,Ny,P,E,T,...
     Ns,Hm,SrcInfo,BdaryInfo,wnum,betan,betaS,betaG,betag)
 
 M=Nx*Ny; % total number of nodes in the mesh
@@ -15,7 +15,7 @@ gammac=X(2*M+1:3*M); %current value of gamma
 f=0.0;
 g=zeros(3*M,1);
 
-if ~GammaFlag %Gamma is known
+if ~ismember("Gamma",MinVar) %Gamma is known
     for ks=1:Ns
         
         Hc=zeros(M,1); % predicted data

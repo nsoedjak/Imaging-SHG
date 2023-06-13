@@ -76,7 +76,8 @@ sigmat=0.1+0.03*ind_rec(P,rec4)+0.06*ind_rec(P,rec5)+0.1*ind_rec(P,rec6);
 
 %gammat=0.2+0.06*ind_rec(P,rec1)+0.12*ind_rec(P,rec2)+0.2*ind_rec(P,rec3); %true nonlinear susceptibility
 rec_gamma=[1.2 1.8; 0.4 1.6];
-gammat=0.2+0.1*ind_rec(P,rec_gamma);
+%gammat=0.2+0.1*ind_rec(P,rec_gamma);
+gammat=10*(0.2+0.1*ind_rec(P,rec_gamma));
 
 %Gammat=0.2+0.1*ind_rec(P,rec7);
 %Gammat=ones(M,1);
@@ -95,7 +96,8 @@ if ~ismember("Sigma",MinVar)
 end
 
 
-gamma0=0.2*ones(M,1);
+%gamma0=0.2*ones(M,1);
+gamma0=10*(0.2*ones(M,1));
 if ~ismember("gamma",MinVar)
     gamma0=gammat;
 end
@@ -136,7 +138,8 @@ if ismember("gamma",MinVar)
     ph = pcolor(x,y,gamma0g); axis tight; colorbar('SouthOutside');
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
-    caxis([0.2 0.3]);
+    %caxis([0.2 0.3]);
+    caxis(10*[0.2 0.3]);
     title('initial guess of \gamma');
     drawnow;
 end
@@ -173,7 +176,8 @@ if ismember("gamma", MinVar)
     ph = pcolor(x,y,gammatg); axis tight; colorbar('SouthOutside');
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
-    caxis([0.2 0.3]);
+    %caxis([0.2 0.3]);
+    caxis(10*[0.2 0.3]);
     title('true \gamma');
     drawnow;
 end
@@ -296,7 +300,8 @@ function stop = outfun(x_,optimValues,state)
                      ph = pcolor(x,y,gammarg); axis tight; colorbar('SouthOutside');
                      axis square; axis off; shading interp;
                      ph.ZData = ph.CData;
-                     caxis([0.2 0.3]);
+                     %caxis([0.2 0.3]);
+                     caxis(10*[0.2 0.3]);
                      title(sprintf('recovered \\gamma after %.0f iterations', optimValues.iteration));
                      drawnow;
                 end
@@ -305,11 +310,9 @@ function stop = outfun(x_,optimValues,state)
              %hold off
          otherwise
      end
- end
+end
 
-GammaFlag = ismember("Gamma", MinVar);
-
-f=@(X) SHGObj(X,GammaFlag,Gammat,MinVar,x,y,dx,dy,Nx,Ny,P,E,T,Ns,Hm,...
+f=@(X) SHGObj(X,Gammat,MinVar,x,y,dx,dy,Nx,Ny,P,E,T,Ns,Hm,...
     SrcInfo,BdaryInfo,wnum,betan,betaS,betaG,betag);
 
 if strcmp(OptimMethod,'UNCON')
@@ -361,7 +364,7 @@ if ismember("Ref",MinVar)
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
     caxis([0.1 0.15]);
-    title('recovered \eta');
+    title(sprintf('recovered \\eta after %.0f iterations', output.iterations));
     drawnow;
 end
 if ismember("Sigma",MinVar)
@@ -371,7 +374,7 @@ if ismember("Sigma",MinVar)
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
     caxis([0.1 0.2]);
-    title('recovered \sigma');
+    title(sprintf('recovered \\sigma after %.0f iterations', output.iterations));
     drawnow;
 end
 if ismember("gamma",MinVar)
@@ -380,10 +383,38 @@ if ismember("gamma",MinVar)
     ph = pcolor(x,y,gammarg); axis tight; colorbar('SouthOutside');
     axis square; axis off; shading interp;
     ph.ZData = ph.CData;
-    caxis([0.2 0.3]);
-    title('recovered \gamma');
+    %caxis([0.2 0.3]);
+    caxis(10*[0.2 0.3]);
+    title(sprintf('recovered \\gamma after %.0f iterations', output.iterations));
     drawnow;
 end
+
+%Reconstruct and plot Gamma
+if ismember("Gamma",MinVar)
+    Gammar = zeros(M,1);
+    for ks=1:Ns
+        % Solve the Helmholtz equations
+        ur=HelmholtzSolve('u_Forward',SrcInfo,BdaryInfo,ks,P,E,T,wnum,refr,sigmar,srczero);
+    
+        srcv = -(2*wnum)^2 * gammar .* ur.^2;
+        vr=HelmholtzSolve('Homogeneous_Robin',SrcInfo,BdaryInfo,ks,P,E,T,2*wnum,refr,sigmar,srcv);
+    
+        Gammar = Gammar + Hm(:,ks)./(sigmar.*(abs(ur).^2 + abs(vr).^2));
+    end
+    Gammar = Gammar./Ns;
+
+    %Plot Gamma
+    Gammarg=tri2grid(P,T,Gammar,x,y);
+    figure;
+    ph = pcolor(x,y,Gammarg); axis tight; colorbar('SouthOutside');
+    axis square; axis off; shading interp;
+    ph.ZData = ph.CData;
+    caxis([0.2 0.4]);
+    title(sprintf('recovered \\Gamma after %.0f iterations', output.iterations));
+    drawnow;
+end
+
+
 
 disp('Finished plotting final results .......');
 
