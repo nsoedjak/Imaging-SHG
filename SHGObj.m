@@ -15,7 +15,7 @@ gammac=X(2*M+1:3*M); %current value of gamma
 f=0.0;
 g=zeros(3*M,1);
 
-if ~ismember("Gamma",MinVar) %Gamma is known
+if ~ismember("Gamma",MinVar) %Gamma is known, use standard objective function
     for ks=1:Ns
         
         Hc=zeros(M,1); % predicted data
@@ -79,7 +79,7 @@ if ~ismember("Gamma",MinVar) %Gamma is known
         end
         
     end
-else %Gamma is unknown
+else %Gamma is unknown, use alternate objective function based  on data ratios
     srczero=zeros(M,1); % zero volume source for forward problems
  
     u1=HelmholtzSolve('u_Forward',SrcInfo,BdaryInfo,1,P,E,T,wnum,refc,sigmac,srczero);
