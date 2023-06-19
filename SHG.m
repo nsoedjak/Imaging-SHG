@@ -10,7 +10,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Mathematical model:
 % \Delta u + k^2 (1+n) u +i k \sigma u =0
-% u = f
+% u = g
 % 
 % \Delta v + (2k)^2 (1+n) v +i 2k \sigma v = -(2k)^2 \gamma u^2
 % v + i2k n*grad v = 0
@@ -45,10 +45,35 @@ M=Nx*Ny; % total number of nodes in the mesh
 wnum=1; % wave number k
 
 
+
+% Set up initial guesses
+ref0=reft.background*ones(M,1);
+sigma0=sigmat.background*ones(M,1);
+gamma0=gammat.background*ones(M,1);
+
+
+%Evaluate the true coefficients at the grid points
 reft = reft.evaluate(P);
 sigmat = sigmat.evaluate(P);
 gammat = gammat.evaluate(P);
 Gammat = Gammat.evaluate(P);
+
+
+% Set up initial guesses only for coefficients we want to reconstruct
+if ~ismember("Ref",MinVar)
+    ref0=reft;
+end
+
+if ~ismember("gamma",MinVar)
+    gamma0=gammat;
+end
+
+if ~ismember("Sigma",MinVar)
+    sigma0=sigmat;
+end
+
+X0=[ref0' sigma0' gamma0']';
+
 
 
 reft_min = min(reft);
@@ -59,34 +84,6 @@ gammat_min = min(gammat);
 gammat_max = max(gammat);
 Gammat_min = min(Gammat);
 Gammat_max = max(Gammat);
-
-
-% Set up initial guess
-%ref0=0.1*ones(M,1);
-ref0=10*(0.1*ones(M,1));
-if ~ismember("Ref",MinVar)
-    ref0=reft;
-end
-
-sigma0=0.1*ones(M,1);
-if ~ismember("Sigma",MinVar)
-    sigma0=sigmat;
-end
-
-
-%gamma0=0.2*ones(M,1);
-gamma0=10*(0.2*ones(M,1));
-if ~ismember("gamma",MinVar)
-    gamma0=gammat;
-end
-
-X0=[ref0' sigma0' gamma0']';
-
-
-
-
-
-
 
 
 %Plot initial guesses
@@ -180,7 +177,7 @@ Hm=zeros(M,Ns);
 for ks=1:Ns
     
     % Solve the Helmholtz equations
-    ut=HelmholtzSolve('u_Forward',SrcInfo,BdaryInfo,ks,P,E,T,wnum,reft,sigmat,srczero);
+    ut=HelmholtzSolve('u_Forward',SrcInfo,BdaryInfo,ks,P,E,T,wnum,ref t,sigmat,srczero);
 
     srcv = -(2*wnum)^2 * gammat .* ut.^2;
     vt=HelmholtzSolve('Homogeneous_Robin',SrcInfo,BdaryInfo,ks,P,E,T,2*wnum,reft,sigmat,srcv);
@@ -233,6 +230,7 @@ disp(' ');
 % history_fval = [];
 % history_iter = [];
 
+% This function is used to plot the intermediate reconstruction results
 function stop = outfun(x_,optimValues,state)
      stop = false;
  
@@ -351,6 +349,7 @@ disp(' ');
 refr=X(1:M);
 sigmar=X(M+1:2*M);
 gammar=X(2*M+1:3*M);
+Gammar=Gammat;
 % Plot reconstruction results
 if ismember("Ref",MinVar)
     refrg=tri2grid(P,T,refr,x,y);
@@ -414,7 +413,8 @@ disp('Finished plotting final results .......');
 
 save Exp01-Info geo P E T SrcInfo BdaryInfo wnum Ns MaxIT ...
                   OptimMethod noiselevel dx dy -ASCII
-save Exp01-Results reft ref0 refr sigmat sigma0 sigmar -ASCII
+save Exp01-Results reft ref0 refr sigmat sigma0 sigmar ...
+                  gammat gamma0 gammar Gammat Gammar -ASCII
 
 te=toc;
 disp(' ');

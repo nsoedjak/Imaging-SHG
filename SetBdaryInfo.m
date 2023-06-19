@@ -7,8 +7,8 @@
 % BdaryInfo(1,nd): the boundary node where detector is located
 % BdaryInfo(2,nd): which segment of the boundary each node is located
 %                  1, 2, 3, 4, 5 for bottom, right, top, left and corner 
-% BdaryInfo(3,nd): x conmponent of outer normal vector
-% BdaryInfo(4,nd): y conmponent of outer normal vector
+% BdaryInfo(3,nd): x component of outer normal vector
+% BdaryInfo(4,nd): y component of outer normal vector
 % BdaryInfo(5,nd): length of the boundary edge where the node is located
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function BdaryInfo=SetBdaryInfo(P,E)

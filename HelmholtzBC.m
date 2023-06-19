@@ -5,23 +5,21 @@
 % Type="u_Forward" solves the forward Helmholtz model for u:
 %
 % \Delta u + k^2(1+n)u+ ik\sigma u = S  in \Omega
-% u = f, on \partial\Omega
+% u = g, on \partial\Omega
 %
-% with S=0, f given by the boundary source
+% with S=0, g given by the boundary source
 %
 % Type="Homogeneous_Dirichlet" solves the Helmholtz model:
 %
 % \Delta w + k^2(1+n)u + ik\sigma w = S  in \Omega
-% w=f, on \partial\Omega
+% w=0, on \partial\Omega
 %
-% with f=0
 %
 % Type="Homogeneous_Robin" solves the Helmholtz model:
 %
 % \Delta w + k^2(1+n)u + ik\sigma w = S  in \Omega
-% w + ik n*grad w=f, on \partial\Omega
+% w + ik n*grad w=0, on \partial\Omega
 %
-% with f=0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [qmatrix,gmatrix,hmatrix,rmatrix] = ...
          HelmholtzBC(Type,SrcInfo,BdaryInfo,ks,wnum,p,e,u,time)

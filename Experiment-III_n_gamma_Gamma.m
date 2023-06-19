@@ -1,9 +1,9 @@
-MinVar=["Ref","Sigma","gamma"]; % Subset of ["Ref","Sigma","gamma", "Gamma"]
+MinVar=["Ref","gamma","Gamma"]; % Subset of ["Ref","Sigma","gamma", "Gamma"]
 
 noiselevel=0.00; % set noise level
-betan=0e-9; betaS=1*betan; betaG=1*betan; betag=1*betan; % regularization parameters
+betan=0e-7; betaS=0e-7; betag=0e-7; % regularization parameters
 
-MaxIT=2000;
+MaxIT=1000;
 
 iter_plot = 100; %plots intermediate reconstructions after every iter_plot iterations
 

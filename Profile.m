@@ -1,4 +1,10 @@
 classdef Profile
+    
+    % A Profile object is used to describe the profile of each of the 
+    % coefficients of the PDE system. The simple profiles we consider here
+    % are composed of rectangles and circles on top of a constant
+    % background.
+   
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Properties:
     %
