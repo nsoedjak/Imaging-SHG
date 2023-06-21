@@ -38,4 +38,4 @@ Gammat.rectangles = [Rectangle([0.5 0.8; 0.5 0.8],2)];
 load geo-2b2
 
 SHG(MinVar, reft, sigmat, gammat, Gammat, Ns, noiselevel, MaxIT, ...
-    iter_plot, betan, betaS, betaG, betag, geo)
+    iter_plot, betan, betaS, betag, geo)

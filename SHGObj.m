@@ -3,7 +3,7 @@
 % respect to the optimization variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [f g]=SHGObj(X,Gammat,MinVar,x,y,dx,dy,Nx,Ny,P,E,T,...
-    Ns,Hm,SrcInfo,BdaryInfo,wnum,betan,betaS,betaG,betag)
+    Ns,Hm,SrcInfo,BdaryInfo,wnum,betan,betaS,betag)
 
 M=Nx*Ny; % total number of nodes in the mesh
 ne = size(SrcInfo,2); % number of edges/nodes on the domain boundary

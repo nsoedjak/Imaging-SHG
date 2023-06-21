@@ -22,7 +22,7 @@
 % 
 
 function SHG(MinVar, reft, sigmat, gammat, Gammat, Ns, noiselevel, ...
-    MaxIT, iter_plot, betan, betaS, betaG, betag, geo)
+    MaxIT, iter_plot, betan, betaS, betag, geo)
 
 tic; tb=toc;
 
@@ -177,7 +177,7 @@ Hm=zeros(M,Ns);
 for ks=1:Ns
     
     % Solve the Helmholtz equations
-    ut=HelmholtzSolve('u_Forward',SrcInfo,BdaryInfo,ks,P,E,T,wnum,ref t,sigmat,srczero);
+    ut=HelmholtzSolve('u_Forward',SrcInfo,BdaryInfo,ks,P,E,T,wnum,reft,sigmat,srczero);
 
     srcv = -(2*wnum)^2 * gammat .* ut.^2;
     vt=HelmholtzSolve('Homogeneous_Robin',SrcInfo,BdaryInfo,ks,P,E,T,2*wnum,reft,sigmat,srcv);
@@ -306,7 +306,7 @@ function stop = outfun(x_,optimValues,state)
 end
 
 f=@(X) SHGObj(X,Gammat,MinVar,x,y,dx,dy,Nx,Ny,P,E,T,Ns,Hm,...
-    SrcInfo,BdaryInfo,wnum,betan,betaS,betaG,betag);
+    SrcInfo,BdaryInfo,wnum,betan,betaS,betag);
 
 if strcmp(OptimMethod,'UNCON')
     options=optimoptions(@fminunc,'OutputFcn',@outfun,'Algorithm','quasi-newton', ...
