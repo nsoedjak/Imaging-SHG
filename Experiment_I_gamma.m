@@ -1,13 +1,14 @@
-MinVar=["Ref","gamma","Gamma"]; % Subset of ["Ref","Sigma","gamma", "Gamma"]
+% Coefficients to reconstruct; subset of ["Ref","Sigma","gamma", "Gamma"]
+MinVar=["gamma"]; 
 
-noiselevel=0.00; % set noise level
-betan=0e-7; betaS=0e-7; betag=0e-7; % regularization parameters
+noiselevel=0.01; % set noise level
+betan=0e-7; betaS=0e-7; betag=1e-7; % regularization parameters
 
-MaxIT=1000;
+MaxIT=1000; % max number of iterations in optimization algorithm
 
-iter_plot = 100; %plots intermediate reconstructions after every iter_plot iterations
+iter_plot=50; % plots intermediate reconstructions after every iter_plot iterations
 
-Ns=36; %number of sources (maximum is 36)
+Ns=36; % number of sources (maximum is 36)
 
 %Set true coefficients
 %True Ref
@@ -23,8 +24,9 @@ sigmat.rectangles = [Rectangle([0.4 0.8; 0.2 1.1],0.03), ...
 
 %True gamma
 gammat = Profile();
-gammat.background = 2;
-gammat.rectangles = [Rectangle([1.2 1.8; 0.4 1.6],1)];
+gammat.background = 0.2;
+gammat.rectangles = [Rectangle([0.5 0.8; 0.5 0.8],0.2), ...
+    Rectangle([1.4 1.7; 1.4 1.7],0.4), Rectangle([1.0 1.8; 0.3 0.6],0.6)];
 
 %True Gamma
 Gammat = Profile();
