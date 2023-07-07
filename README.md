@@ -7,4 +7,4 @@ A summary of the mathematics underlying the code can be found in the file Readme
 References
 ===================
 
-[1] K. Ren and N. Soedjak, "Recovering coefficients in a system of semilinear Helmholtz equations from internal data", (in preparation).
+[1] K. Ren and N. Soedjak, "Recovering coefficients in a system of semilinear Helmholtz equations from internal data", arXiv:2307.01385, (2023).
